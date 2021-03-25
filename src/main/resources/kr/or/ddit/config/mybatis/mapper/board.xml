@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="board">
+ 
+  <!-- select 된 커럼과 resultType에 기술된 클래스의 필드 이름이 동일하면 자동으로 값을 넣어준다
+  	   resultType : 한 행의 정보를 저장할 수 있는 클래스 타입을 명시 -->
+ <select id="searchPagingBoard" resultType="boardVo" parameterType="pageVo">
+  	SELECT LPAD((' '), 8*(LEVEL-1)) || TITLE title, bor_no, post_no, USER_ID, REG_DT,POST_DEL, LEVEL boardLevel
+	FROM
+	    (SELECT ROWNUM rn, a.*
+	     FROM
+	         (SELECT *
+	          FROM KBOARD_POST
+	          WHERE bor_no = #{boardNo}
+	          ORDER BY post_no DESC
+	          ) a
+	     )
+	WHERE rn BETWEEN (#{page}-1) * #{pageSize} +1 AND #{page} * #{pageSize}
+	START WITH POST_C_NO IS NULL 
+    CONNECT BY PRIOR POST_NO = POST_C_NO
+    ORDER SIBLINGS BY reg_dt DESC
+  </select>
+  <select id="allBoardCnt" parameterType="pageVo" resultType="int">
+  	SELECT COUNT(*) 
+  	FROM KBOARD_POST
+  	WHERE bor_no = #{boardNo}
+  </select>
+  
+  <insert id="registBoard" parameterType="boardVo">
+  	INSERT INTO KBOARD_POST 
+  	VALUES(#{bor_no},kboard_post_seq.nextVal,#{user_id},#{title},#{cont},SYSDATE,1,'','','')
+  </insert>
+  
+  <insert id="registComentBoard" parameterType="boardVo">
+  	INSERT INTO KBOARD_POST 
+  	VALUES(#{bor_no},kboard_post_seq.nextVal,#{user_id},#{title},#{cont},SYSDATE,1,#{bor_c_nm},#{post_c_no},#{rep_user_id})
+  </insert>
+  
+  <select id="selectBoardPost" parameterType="boardVo" resultType="boardVo">
+  	SELECT * FROM KBOARD_POST
+  	WHERE bor_no = #{bor_no} AND post_no = #{post_no} AND user_id = #{user_id}
+  </select>
+  
+  <select id="selectMaxPostNo" resultType="int">
+  	SELECT MAX(post_no) FROM KBOARD_POST
+  </select>
+  
+  <update id="deleteBoardPost" parameterType="boardVo">
+  	UPDATE KBOARD_POST SET POST_DEL = 0
+  	WHERE bor_no = #{bor_no} AND post_no = #{post_no} AND user_id = #{user_id}
+  </update>
+
+	 
+ <update id="modifyBoard" parameterType="boardVo">
+ 	UPDATE KBOARD_POST SET title=#{title}, cont = #{cont}, REG_DT = SYSDATE
+ 	WHERE bor_no = #{bor_no} AND post_no = #{post_no} AND user_id = #{user_id}
+ </update>
+
+  
+</mapper>

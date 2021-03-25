@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="comment">
+ 
+  <!-- select 된 커럼과 resultType에 기술된 클래스의 필드 이름이 동일하면 자동으로 값을 넣어준다
+  	   resultType : 한 행의 정보를 저장할 수 있는 클래스 타입을 명시 -->
+  <insert id="registComment" parameterType="commentVo">
+  	INSERT INTO KPOST_COM
+  	VALUES(comment_seq.nextVal,#{com_user_id},SYSDATE,#{com_con},1,#{bor_no},#{post_no},#{user_id})
+  </insert>
+  
+  <select id="selectBoardComment" parameterType="commentVo" resultType="commentVo">
+  	SELECT * FROM KPOST_COM
+  	WHERE bor_no = #{bor_no} AND post_no = #{post_no} AND user_id = #{user_id}
+  	ORDER BY COM_NO
+  </select>
+  
+  <update id="deleteComment" parameterType="commentVo">
+  	UPDATE KPOST_COM SET com_del = 0
+  	WHERE com_no = #{com_no}
+  </update>
+ 
+</mapper>
